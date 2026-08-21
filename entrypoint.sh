@@ -1,10 +1,16 @@
 #!/bin/bash
 set -e
 
-# Initialize/migrate the database
-cd /app/orc_api
-alembic upgrade head
-cd /app
+# Install the package in editable mode (development)
+# This is idempotent and ensures code changes are picked up
+if [ -f /app/pyproject.toml ]; then
+  pip install -e . --quiet
+fi
 
-# Start the application
-exec uvicorn orc_api.main:app --host 0.0.0.0 --port 5000 --timeout-keep-alive 120 --workers 1
+# Initialize/migrate the database
+# cd /app/orc_api
+orc db migrate
+# cd /app
+
+# Start the application within Dockerfile
+exec "$@"
